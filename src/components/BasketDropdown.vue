@@ -76,6 +76,7 @@ import { defineProps, defineEmits } from 'vue';
 const emit = defineEmits(['toggleBasket', 'removeFromBasket', 'updateQuantity']);
 
 defineProps({
+  items:Array,
   basketItems: Array,
   isBasketOpen: Boolean,
   lastAddedItem: Object,

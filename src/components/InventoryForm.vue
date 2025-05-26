@@ -99,12 +99,12 @@ export default {
           }
         });
 
-        alert(`✅ Item added: ${response.data.name}`);
+        alert(`Item added: ${response.data.name}`);
         this.$emit('item-added', response.data);
         this.resetForm();
       } catch (error) {
-        console.error('❌ Failed to add item:', error);
-        alert('❌ Failed to add item');
+        console.error('Failed to add item:', error);
+        alert('Failed to add item');
       }
     }
   }

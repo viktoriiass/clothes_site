@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const itemsRouter = require('./routes/items');
 
+
 const app = express();
 const basketRouter = require('./routes/basket');
 
@@ -11,7 +12,7 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
-// ✅ Статичні файли для зображень
+// Статичні файли для зображень
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API маршрути

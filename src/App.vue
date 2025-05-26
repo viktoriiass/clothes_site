@@ -11,7 +11,7 @@
       :lastAddedItem="lastAddedItem"
       @toggleBasket="toggleBasket"
       @removeFromBasket="(index) => removeFromBasket(index)"
-      @updateQuantity="(index, change) => updateQuantity(index, change)"
+      @updateQuantity="updateQuantity"
     />
 
     <BannerSection />
@@ -21,9 +21,11 @@
       <InventoryForm @add-to-inventory="addToInventory" />
       <section>
         <CurrentInventory
-          :newItem="null"
+          :items="inventoryItems"
+          :key="inventoryKey"
           @add-to-basket="addToBasket"
           @delete-item="refreshEverything"
+          @basket-updated="refreshBasket"
         />
       </section>
     </main>
@@ -62,24 +64,24 @@ export default {
     const isBasketOpen = ref(false);
     const lastAddedItem = ref(null);
     const inventoryItems = ref([]);
+    const inventoryKey = ref(Date.now());
     let hideTimeout = null;
 
     const fetchBasket = async () => {
       try {
         const res = await axios.get('http://localhost:3000/api/basket');
         basketItems.value = res.data;
+
+        //  Sort by addedAt
+        basketItems.value.sort((a, b) => a.addedAt - b.addedAt);
       } catch (error) {
-        console.error('❌ Failed to fetch basket:', error);
+        console.error(' Failed to fetch basket:', error);
       }
     };
 
     const fetchInventory = async () => {
-      try {
-        const res = await axios.get('http://localhost:3000/api/items');
-        inventoryItems.value = res.data;
-      } catch (error) {
-        console.error('❌ Failed to fetch inventory:', error);
-      }
+      const res = await axios.get('http://localhost:3000/api/items');
+      inventoryItems.value = res.data;
     };
 
     const refreshBasket = () => fetchBasket();
@@ -120,7 +122,7 @@ export default {
           isBasketOpen.value = false;
         }, 2000);
       } catch (error) {
-        console.error('❌ Failed to add to basket:', error);
+        console.error(' Failed to add to basket:', error);
       }
     };
 
@@ -130,34 +132,41 @@ export default {
         await axios.delete(`http://localhost:3000/api/basket/${item.id}?size=${item.size}`);
         await fetchBasket();
       } catch (error) {
-        console.error('❌ Failed to remove from basket:', error);
+        console.error(' Failed to remove from basket:', error);
       }
     };
 
     const updateQuantity = async (index, change) => {
-      const item = basketItems.value[index];
-      const newQty = item.quantity + change;
-      if (newQty <= 0) {
-        await removeFromBasket(index);
-      } else {
-        try {
-          await removeFromBasket(index);
-          for (let i = 0; i < newQty; i++) {
-            await axios.post('http://localhost:3000/api/basket', item);
-          }
-          await fetchBasket();
-        } catch (err) {
-          console.error('❌ Failed to update quantity:', err);
-        }
+    const item = basketItems.value[index];
+    const newQty = item.quantity + change;
+
+    console.log(' updateQuantity()', item, '→ new qty:', newQty); // Debug
+
+    if (newQty <= 0) {
+      await removeFromBasket(index);
+    } else {
+      try {
+        const cleanSize = String(item.size).split(':')[0]; // Clean size (e.g., 'S')
+        await axios.put(
+          `http://localhost:3000/api/basket/${item.id}?size=${cleanSize}`,
+          { quantity: newQty }
+        );
+        await fetchBasket();
+      } catch (err) {
+        console.error(' Failed to update quantity:', err.response?.data || err.message);
       }
-    };
+    }
+  };
 
     const addToInventory = async (item) => {
       try {
-        await axios.post('http://localhost:3000/api/items', item);
-        await fetchInventory();
+        const res = await axios.post('http://localhost:3000/api/items', item);
+        const addedItem = res.data;
+        inventoryItems.value.push(addedItem);
+        inventoryKey.value = Date.now();
+
       } catch (err) {
-        console.error('❌ Failed to add to inventory:', err);
+        console.error(' Failed to add to inventory:', err);
       }
     };
 
@@ -165,16 +174,15 @@ export default {
       try {
         await axios.delete(`http://localhost:3000/api/items/${id}`);
         inventoryItems.value = inventoryItems.value.filter(item => item.id != id);
-
         const itemsToRemove = basketItems.value.filter(item => item.id == id);
         for (const item of itemsToRemove) {
           await axios.delete(`http://localhost:3000/api/basket/${item.id}?size=${item.size}`);
         }
 
         await fetchBasket();
-        console.log(`✅ Item ${id} removed from inventory and basket`);
+        console.log(`Item ${id} removed from inventory and basket`);
       } catch (error) {
-        console.error('❌ Failed to delete item:', error);
+        console.error(' Failed to delete item:', error);
       }
     };
 
@@ -197,8 +205,6 @@ export default {
   }
 };
 </script>
-
-
 
 <style>
 @import './assets/stylesheet.css';

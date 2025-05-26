@@ -10,11 +10,25 @@ function getItemById(req, res) {
   res.json(item);
 }
 
+
+//ID generator
+const generateId = () => {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  return `${timestamp}-${random}`;
+};
+
 function addItem(req, res) {
-  const newItem = { id: store.getNextItemId(), ...req.body };
-  store.inventory.push(newItem);
-  res.status(201).json(newItem);
+  const item = { ...req.body };
+  item.id = generateId();
+  item.addedAt = Date.now();
+  store.inventory.push(item);
+  res.status(201).json(item);
 }
+
+module.exports = { addItem };
+
+
 
 function updateItem(req, res) {
   const index = store.inventory.findIndex(i => i.id == req.params.id);

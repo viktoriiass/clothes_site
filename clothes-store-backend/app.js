@@ -2,7 +2,7 @@ const express = require('express');
 const logger = require('morgan');
 const app = express();
 
-// Routes
+
 const itemRoutes = require('./routes/items');
 const basketRoutes = require('./routes/basket');
 
@@ -12,7 +12,6 @@ app.use(express.json());
 app.use('/api/items', itemRoutes);
 app.use('/api/basket', basketRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });

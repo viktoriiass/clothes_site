@@ -16,7 +16,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in items" :key="item.id">
+           <tr v-for="item in items" :key="item.id">
               <td>
                 <img v-if="item.image" :src="getImageUrl(item.image)" alt="Item image" class="item-img" width="80" />
               </td>
@@ -46,16 +46,15 @@ import axios from 'axios';
 
 export default {
   name: 'CurrentInventory',
-  props: ['newItem'],
   emits: ['add-to-basket', 'delete-item', 'basket-updated'],
-  data() {
-    return {
-      inventory: []
-    };
+  props: {
+    newItem: Object,
+    items: Array
   },
+
   computed: {
     groupedByCategory() {
-      return this.inventory.reduce((acc, item) => {
+      return this.items.reduce((acc, item) => {
         const cat = item.category || 'Uncategorized';
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(item);
@@ -63,25 +62,9 @@ export default {
       }, {});
     }
   },
-  watch: {
-    newItem(val) {
-      if (val) {
-        this.inventory.push(val);
-      }
-    }
-  },
-  created() {
-    this.fetchInventory();
-  },
+
+
   methods: {
-    async fetchInventory() {
-      try {
-        const res = await axios.get('http://localhost:3000/api/items');
-        this.inventory = res.data;
-      } catch (error) {
-        console.error('Failed to load inventory:', error);
-      }
-    },
     getImageUrl(path) {
       if (!path) return '';
       return path.startsWith('/uploads') ? `http://localhost:3000${path}` : path;
@@ -93,13 +76,9 @@ export default {
           params: { size: item.size }
         });
 
-        this.inventory = this.inventory.filter(
-          i => !(i.id === item.id && i.size === item.size)
-        );
-
-        this.$emit('item-deleted', item); // trigger refresh
+        this.$emit('delete-item', item);
       } catch (error) {
-        console.error('❌ Failed to delete item:', error);
+        console.error(' Failed to delete item:', error);
         alert('Failed to delete item');
       }
     },
@@ -108,7 +87,7 @@ export default {
         await axios.post('http://localhost:3000/api/basket', item);
         this.$emit('basket-updated'); // trigger refresh
       } catch (error) {
-        console.error('❌ Failed to add to basket:', error);
+        console.error(' Failed to add to basket:', error);
       }
     }
   }
