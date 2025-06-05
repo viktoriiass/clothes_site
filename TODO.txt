@@ -1,0 +1,3 @@
+-fix images in curr inv and in basket DONE
+-fix add & delete from curr inv DONE
+-fix db its not add items insted of prev its just add everything to db which 
