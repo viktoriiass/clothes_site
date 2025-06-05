@@ -69,7 +69,7 @@ export default {
   },
   methods: {
     handleImage(event) {
-      this.form.imageFile = event.target.files[0];
+      this.form.imageFile = event.target.files[0] || null;
     },
     resetForm() {
       this.form = {
@@ -82,33 +82,74 @@ export default {
       };
     },
     async submitItem() {
-      try {
-        const formData = new FormData();
-        formData.append('name', this.form.name);
-        formData.append('description', this.form.description);
-        formData.append('price', this.form.price);
-        formData.append('category', this.form.category);
-        formData.append('size', this.form.size);
-        if (this.form.imageFile) {
-          formData.append('image', this.form.imageFile);
-        }
+      if (!this.form.name.trim()) {
+        alert('Name is required.');
+        return;
+      }
+      const numericPrice = parseFloat(this.form.price);
+      if (isNaN(numericPrice) || numericPrice < 0) {
+        alert('Price must be a valid non-negative number.');
+        return;
+      }
+      if (!this.form.category) {
+        alert('Category is required.');
+        return;
+      }
+      if (!this.form.size) {
+        alert('Size is required.');
+        return;
+      }
+      if (!this.form.imageFile) {
+        alert(' An image file is required.');
+        return;
+      }
 
-        const response = await axios.post('http://localhost:3000/api/items', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+      const formData = new FormData();
+      formData.append('name', this.form.name.trim());
+      formData.append('description', this.form.description.trim());
+      formData.append('price', numericPrice);
+      formData.append('category', this.form.category);
+      formData.append('size', this.form.size);
+      formData.append('image', this.form.imageFile);
+
+      try {
+        const response = await axios.post(
+          'http://localhost:3000/api/items',
+        );
 
         alert(`Item added: ${response.data.name}`);
         this.$emit('item-added', response.data);
         this.resetForm();
       } catch (error) {
-        console.error('Failed to add item:', error);
-        alert('Failed to add item');
+        console.error(' Failed to add item:', error);
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          alert(` ${error.response.data.error}`);
+        } else {
+          alert('An unknown error occurred while adding the item.');
+        }
       }
     }
   }
 };
 </script>
 
+<style scoped>
+.container {
+  margin: 2rem auto;
+}
+.form-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+label {
+  display: block;
+}
+button {
+  margin-top: 1rem;
+}
+</style>
 

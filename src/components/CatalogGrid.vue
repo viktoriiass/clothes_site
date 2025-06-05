@@ -19,7 +19,4 @@
   </section>
 </template>
 
-<script setup>
-// No logic needed for static grid
-</script>
 

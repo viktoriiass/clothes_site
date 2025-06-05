@@ -16,13 +16,13 @@
             </tr>
           </thead>
           <tbody>
-           <tr v-for="item in items" :key="item.id">
+           <tr v-for="item in items" :key="item._id">
               <td>
                 <img v-if="item.image" :src="getImageUrl(item.image)" alt="Item image" class="item-img" width="80" />
               </td>
               <td>
                 {{ item.name }}<br />
-                <small class="ref-label">Ref: {{ item.id }}</small>
+                <small class="ref-label">Ref: {{ item._id }}</small>
               </td>
               <td class="description">{{ item.description }}</td>
               <td>{{ item.size }}</td>
@@ -31,7 +31,7 @@
               </td>
               <td>
                 <button class="add-to-basket-btn" @click="$emit('add-to-basket', item)">Add to Basket</button>
-                <button class="remove-btn" @click="deleteItem(item)">Delete</button>
+                <button class="remove-btn" @click="$emit('remove-btn', item)">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -71,8 +71,8 @@ export default {
     },
     async deleteItem(item) {
       try {
-        await axios.delete(`http://localhost:3000/api/items/${item.id}`);
-        await axios.delete(`http://localhost:3000/api/basket/${item.id}`, {
+        await axios.delete(`http://localhost:3000/api/items/${item._id}`);
+        await axios.delete(`http://localhost:3000/api/basket/${item._id}`, {
           params: { size: item.size }
         });
 
@@ -85,7 +85,7 @@ export default {
     async addToBasket(item) {
       try {
         await axios.post('http://localhost:3000/api/basket', item);
-        this.$emit('basket-updated'); // trigger refresh
+        this.$emit('basket-updated');
       } catch (error) {
         console.error(' Failed to add to basket:', error);
       }

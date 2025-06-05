@@ -1,7 +1,6 @@
 <template>
   <footer class="footer">
     <div class="footer-content">
-      <!-- Help Section -->
       <div class="footer-section">
         <h4>Can we help you?</h4>
         <p>💬 <strong>Start chat</strong></p>
@@ -10,7 +9,6 @@
         <p class="support-time">From Monday to Friday from 9:00 to 18:00.</p>
       </div>
 
-      <!-- Help Links -->
       <div class="footer-section hide-on-mobile">
         <h4>Help</h4>
         <ul>
@@ -25,7 +23,6 @@
         </ul>
       </div>
 
-      <!-- About Section -->
       <div class="footer-section">
         <h4>We are Online Shop</h4>
         <ul>
@@ -38,7 +35,6 @@
         </ul>
       </div>
 
-      <!-- Interest Links -->
       <div class="footer-section hide-on-mobile">
         <h4>You might be interested in</h4>
         <ul>
@@ -54,13 +50,10 @@
       </div>
     </div>
 
-    <!-- Bottom Footer -->
     <div class="footer-bottom">
       <p>&copy; 2025 - Created for study purposes only</p>
     </div>
   </footer>
 </template>
 
-<script setup>
-// no JS logic for now
-</script>
+

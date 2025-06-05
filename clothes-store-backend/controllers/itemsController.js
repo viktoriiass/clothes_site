@@ -1,53 +1,86 @@
-const store = require('../data/store');
+// controllers/itemsController.js
+const Item = require('../models/Item');
 
-function getAllItems(req, res) {
-  res.json(store.inventory);
-}
-
-function getItemById(req, res) {
-  const item = store.inventory.find(i => i.id == req.params.id);
-  if (!item) return res.status(404).json({ error: 'Item not found' });
-  res.json(item);
-}
-
-
-//ID generator
-const generateId = () => {
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000);
-  return `${timestamp}-${random}`;
+// GET /api/items
+exports.getAllItems = async (req, res, next) => {
+  try {
+    const items = await Item.find().sort({ addedAt: -1 });
+    res.json(items);
+  } catch (err) {
+    next(err);
+  }
 };
 
-function addItem(req, res) {
-  const item = { ...req.body };
-  item.id = generateId();
-  item.addedAt = Date.now();
-  store.inventory.push(item);
-  res.status(201).json(item);
-}
+// GET /api/items/:id
+exports.getItemById = async (req, res, next) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    res.json(item);
+  } catch (err) {
+    next(err);
+  }
+};
 
-module.exports = { addItem };
+// POST /api/items
+exports.addItem = async (req, res, next) => {
+  try {
+    const { name, description, price, category, size, image } = req.body;
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: "Field 'name' is required" });
+    }
+    const numericPrice = parseFloat(price);
+    if (isNaN(numericPrice)) {
+      return res.status(400).json({ error: "Field 'price' must be a number" });
+    }
+    const newItem = await Item.create({
+      name:        name.trim(),
+      description: (description || '').trim(),
+      price:       numericPrice,
+      category:    category || '',
+      size:        size || '',
+      image:       image || '',
+      addedAt:     new Date()
+    });
+    res.status(201).json(newItem);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ error: err.message });
+    }
+    next(err);
+  }
+};
 
+// PUT /api/items/:id
+exports.updateItem = async (req, res, next) => {
+  try {
+    const updates = {
+      name:        req.body.name,
+      description: req.body.description,
+      price:       parseFloat(req.body.price),
+      category:    req.body.category,
+      size:        req.body.size,
+      image:       req.body.image,
+    };
+    const updated = await Item.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ error: 'Item not found' });
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+};
 
-
-function updateItem(req, res) {
-  const index = store.inventory.findIndex(i => i.id == req.params.id);
-  if (index === -1) return res.status(404).json({ error: 'Item not found' });
-  store.inventory[index] = { id: parseInt(req.params.id), ...req.body };
-  res.json(store.inventory[index]);
-}
-
-function deleteItem(req, res) {
-  const index = store.inventory.findIndex(i => i.id == req.params.id);
-  if (index === -1) return res.status(404).json({ error: 'Item not found' });
-  store.inventory.splice(index, 1);
-  res.status(204).send();
-}
-
-module.exports = {
-  getAllItems,
-  getItemById,
-  addItem,
-  updateItem,
-  deleteItem,
+// DELETE /api/items/:id
+exports.deleteItem = async (req, res, next) => {
+  try {
+    const deleted = await Item.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Item not found' });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
 };

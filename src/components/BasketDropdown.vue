@@ -32,14 +32,18 @@
             :key="item.id + '-' + item.size"
             class="basket-item"
           >
+
             <img
-              v-if="item.image"
-              :src="getImageUrl(item.image)"
+              v-if="item.item && item.item.image"
+              :src="getImageUrl(item.item.image)"
               alt="Item image"
               class="basket-item-img"
             />
+            <div v-else class="basket-img-placeholder">
+              No image
+            </div>
             <div class="basket-item-details">
-              <h4>{{ item.name }}</h4>
+              <h4>{{ item.item.name }}</h4>
               <p>Size: {{ item.size }}</p>
               <p>€{{ item.price }}</p>
               <div class="quantity-controls">
@@ -85,7 +89,9 @@ defineProps({
 
 function getImageUrl(path) {
   if (!path) return '';
-  return path.startsWith('/uploads') ? 'http://localhost:3000' + path : path;
+  return path.startsWith('/uploads')
+    ? 'http://localhost:3000' + path
+    : path;
 }
 </script>
 
@@ -99,5 +105,4 @@ function getImageUrl(path) {
   display: flex;
   justify-content: flex-end;
 }
-
 </style>

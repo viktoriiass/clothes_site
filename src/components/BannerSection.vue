@@ -9,6 +9,4 @@
   </section>
 </template>
 
-<script setup>
-// No script logic required for static banner
-</script>
+

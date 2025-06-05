@@ -1,25 +1,44 @@
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const path = require('path');
-const itemsRouter = require('./routes/items');
+require('dotenv').config();
+const express  = require('express');
+const morgan   = require('morgan');
+const cors     = require('cors');
+const path     = require('path');
+const mongoose = require('mongoose');
 
+const itemsRouter  = require('./routes/items');
+const basketRouter = require('./routes/basket');
 
 const app = express();
-const basketRouter = require('./routes/basket');
+
+//MongoDB
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser:    true,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => {
+    console.error('Mongo connection error:', err);
+    process.exit(1);
+  });
 
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
-// Статичні файли для зображень
+// Static folder for uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API маршрути
-app.use('/api/items', itemsRouter);
+// API routes
+app.use('/api/items',  itemsRouter);
 app.use('/api/basket', basketRouter);
 
-app.listen(3000, () => {
-  console.log('✅ Backend running on http://localhost:3000');
+// 404 fallback
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log(`✅ Backend running on http://localhost:${PORT}`)
+);

@@ -4,7 +4,6 @@
       <div class="hamburger-icon" @click="toggleMenu">☰</div>
     </div>
 
-    <!-- Sliding Catalog Menu -->
     <div class="catalog-menu" v-cloak :class="{ active: isOpen }">
       <h2>Item Catalog</h2>
       <ul>
@@ -30,7 +29,6 @@
       </ul>
     </div>
 
-    <!-- Overlay that closes menu -->
     <div class="overlay" :class="{ active: isOpen }" @click="closeMenu"></div>
   </div>
 </template>
