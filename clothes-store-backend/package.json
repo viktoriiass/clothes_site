@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "vue-cli-service build",
+    "serve": "vue-cli-service serve"
+
   },
   "dependencies": {
     "chokidar": "^4.0.3",
